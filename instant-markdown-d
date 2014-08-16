@@ -5,6 +5,7 @@ var server = require('http').createServer(httpHandler),
     spawn = require('child_process').spawn,
     exec = require('child_process').exec,
     io = require('socket.io').listen(server),
+    os = require('os'),
     send = require('send'),
     server,
     socket;
@@ -46,7 +47,7 @@ function httpHandler(req, res) {
 
     case 'PUT':
       var newHTML = '';
-      var gfm = spawn(__dirname + '/node_modules/docter/bin/github-flavored-markdown.rb', ['--unstyled']);
+      var gfm = spawn('ruby', [__dirname + '/node_modules/docter/bin/github-flavored-markdown.rb', '--unstyled']);
       req.on('data', function(chunk){
         gfm.stdin.write(chunk);
       });
@@ -73,7 +74,7 @@ io.sockets.on('connection', function(sock){
   process.stdout.write('connection established!');
 
   var newHTML = '';
-  var gfm = spawn(__dirname + '/node_modules/docter/bin/github-flavored-markdown.rb', ['--unstyled']);
+  var gfm = spawn('ruby', [__dirname + '/node_modules/docter/bin/github-flavored-markdown.rb', '--unstyled']);
   process.stdin.on('data', function(chunk){
     gfm.stdin.write(chunk);
   });
@@ -89,10 +90,10 @@ io.sockets.on('connection', function(sock){
   process.stdin.resume();
 });
 
-
-if (process.platform.toLowerCase().indexOf('darwin') >= 0){
+if (os.platform() === 'win32') {
+  exec('start /b http://localhost:8090', function(error, stdout, stderr){});
+} else if (os.platform() === 'darwin') {
   exec('open -g http://localhost:8090', function(error, stdout, stderr){});
-}
-else {  // assume unix/linux
+} else { // assume unix/linux
   exec('xdg-open http://localhost:8090', function(error, stdout, stderr){});
 }
