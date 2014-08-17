@@ -59,7 +59,9 @@ function httpHandler(req, res) {
         newHTML += data;
       });
       gfm.on('exit',function(ecode){
-        socket.emit('newContent', newHTML);
+        if (socket) {
+          socket.emit('newContent', newHTML);
+        }
       });
       break;
 
@@ -67,7 +69,6 @@ function httpHandler(req, res) {
   }
 }
 
-io.set('log level', 1);
 io.sockets.on('connection', function(sock){
   socket = sock;
   process.stdout.write('connection established!');
